@@ -1,33 +1,35 @@
-const express = require('express');
-const morgan = require('morgan');
-const mysql = require("./sql.js");
-const bodyParser = require('body-parser');
+let express = require('express');
 let session = require('express-session');
 let bcrypt = require('bcrypt');
+let bodyParser = require('body-parser');
 let cors = require('cors');
+let connection = require('./sql.js').connection;
 let config = require('./config.js');
+const morgan = require('morgan');
+
 
 let app = express();
-
 app.use(morgan('short'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 const port = process.env.PORT || 3001
 
-const connection = mysql.connection
-	
 /************************************
  *           Middlewares            *
  ************************************/
-app.use(cors());
+let corsOptions = {
+	origin: 'http://localhost:3000',
+	credentials: true
+}
+app.use(cors(corsOptions));
 app.use(session({
 	secret: config.session.secret,
 	cookie: {
 		maxAge: config.session.maxAge,
 	},
 	saveUninitialized: false,
-	resave: false
+	resave: false,
 }));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -52,67 +54,68 @@ function isAuthenticated(req, res, next) {
 	}
 }
 
-
 /************************************
- *      Book Description            *
+ *          Book Details            *
  ************************************/
 app.get('/book/:isbn', (req, res) => {
-	console.log("Fetching book with isbn: " + req.params.isbn)
-	  const ISBN = req.params.isbn
-	  const queryString =  "SELECT * FROM Book JOIN Description ON ISBN = descriptionID JOIN Author ON authorID = ID WHERE ISBN = ?"
-  
-	  connection.query(queryString, [ISBN], (err, rows, fields) => {
+	console.log("Fetching book with isbn: " + req.params.isbn);
+	const ISBN = req.params.isbn;
+	const queryString =  "SELECT * FROM Book JOIN Description ON ISBN = descriptionID JOIN Author ON authorID = ID WHERE ISBN = ?";
+
+	connection.query(queryString, [ISBN], (err, rows, fields) => {
 		if (err) {
-		  console.log("Failed to query for book: " + err)
-		  res.sendStatus(500)
+		  console.log("Failed to query for book: " + err);
+		  res.sendStatus(500);
 		  return
 		  // throw err
 		}
-	
+
 		const books = rows.map((row) => {
-		  return {title: row.title,
-				  authorFirst: row.authorFirst,
-				  authorLast: row.authorLast,
-				  cover: row.cover,
-				  genre: row.genre,
-				  publisher: row.publisher,
-				  avgRating: row.avgRating,
-				  description: row.description,
-				  biography: row.bio,
-				  price: row.price
-				  }
-		})
+			return {title: row.title,
+				authorFirst: row.authorFirst,
+				authorLast: row.authorLast,
+				cover: row.cover,
+				genre: row.genre,
+				publisher: row.publisher,
+				avgRating: row.avgRating,
+				description: row.Description,
+				biography: row.bio,
+				price: row.price
+			};
+		});
+
 		res.json(books);
-		console.log(books[0]);
-	  })
+		console.log(books);
+	});
+});
   
-	  // res.end()
-	})
-  
-	app.post('/author/:authorFirst/:authorLast', (req, res) => {
-	  console.log("Fetching author info: " + req.params.authorLast)
-	  const firstName = req.params.authorFirst
-	  const lastName = req.params.authorLast
-	  const queryString = "SELECT * FROM Book WHERE authorID IN (SELECT authorID FROM Author WHERE authorLast = ? )"
-	  connection.query(queryString, [lastName, firstName], (err, rows, fields) => {
-		  if (err) {
-			console.log("Failed to query for book: " + err)
-			res.sendStatus(500)
-			return
+app.get('/author/:authorFirst/:authorLast', (req, res) => {
+	const firstName = req.params.authorFirst;
+	const lastName = req.params.authorLast;
+	console.log("Fetching author info: " + firstName + " " + lastName);
+	const queryString = "SELECT * FROM Book JOIN Author ON authorID = ID WHERE authorID IN (SELECT ID FROM Author WHERE authorLast = ? AND authorFirst = ?)";
+	connection.query(queryString, [lastName, firstName], (err, rows, fields) => {
+		if (err) {
+			console.log("Failed to query for author: " + err);
+			res.sendStatus(500);
+			return;
 			// throw err
 		  }
-	  
-		  const booksByAuthor = rows.map((row) => {
-			return {title: row.title,
-					cover: row.cover,
-					price: row.price
-					}
-		  })
-	  
-		  res.send(booksByAuthor)
-		})
-  })
   
+		const booksByAuthor = rows.map((row) => {
+			return {isbn:  row.ISBN,
+					title: row.title,
+					cover: row.cover,
+					price: row.price,
+					biography: row.bio
+			};
+		});
+  
+		res.json(booksByAuthor);
+		console.log(booksByAuthor);
+	});
+});
+
 /************************************
  *       Profile Management         *
  ************************************/
@@ -146,6 +149,15 @@ app.get('/ping', (req, res) => {
 
 app.get('/login', (req, res) => {
 	res.send("This will eventually be a login page");
+});
+
+app.get('/isLoggedIn', (req, res) => {
+	if (req.session.user) {
+		res.send({user: req.session.user});
+	}
+	else {
+		res.send({error: false});
+	}
 });
 
 //Starts a session 
@@ -405,8 +417,94 @@ app.delete('/card', isAuthenticated, (req, res) => {
 		else res.status(200).send({success: "Card removed"});
 	});
 });
+/////////////// add review //////////////////////////////////
 
-  // localhost:3001
-  app.listen(port, () => {
+let flag_1 = false;
+
+function dataInsert(req,res)
+{
+	
+  const INSERT_USER_QUERY = "INSERT INTO Review(ReviewID, User, StarCounter,Comments) VALUES(?,?,?,?)";
+  connection.query(INSERT_USER_QUERY,[req.body["isbn"],req.body["user"],req.body["starcount"],req.body["comments"]], (err, resultados) => {
+		  if(err) {
+			  return res.status(200).send(err)
+		  } else {
+				  
+			  return res.status(200).send('Review register success!')
+		  }
+  
+  });
+  
+}
+
+function dataUpdate(req,res)
+{
+
+  connection.query("SELECT ReviewID,User FROM Review",(err,rows)=>{
+
+	  if(err) {
+		  return res.status(200).send(err)
+	  } 
+	  else {
+
+		  Object.keys(rows).forEach(function(key) {
+				  var row = rows[key];
+				  var userName=row.User.toLowerCase();
+				  var userName_new=req.body["user"].toLowerCase();
+				  if(row.ReviewID===req.body["isbn"] && userName===userName_new)
+				  {
+					  connection.query("UPDATE Review SET StarCounter=?,Comments=? WHERE ReviewID=? and User=?",[req.body["starcount"],req.body["comments"],req.body["isbn"],req.body["user"]]); 
+					  flag_1=true;
+					  return;
+				  }	
+				  if(flag_1===true)
+					  return;			
+			  });
+			  if(flag_1===true)
+			  {
+				  flag_1=false;
+				  return res.send('Review Update success!')
+			  } 
+			  dataInsert(req,res);
+	  
+	  }
+  });
+
+}
+
+app.post("/review/put", (req, res) => {
+
+  dataUpdate(req,res);	
+
+});
+
+app.post("/review/get", (req, res) => {
+
+   connection.query("SELECT * FROM Review",(err,rows)=>{
+
+	  if(err) {
+		  return res.send(err)
+	  } 
+	  else {
+			const reviewData = rows.map((row) => {
+				if(row.ReviewID===req.body["isbn"] )
+				{
+					return {
+							isbn:  row.ReviewID,
+							user: row.User,
+							star: row.StarCounter,
+							comment: row.Comments					
+						};
+				}
+			});
+	  
+			res.json(reviewData);		  
+			  
+	  }
+  });
+
+});
+
+app.listen(port, () => {
 	console.log('Server is up and listening on' , port)
   }) //This is the port express will listen on

@@ -1,68 +1,40 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Project Github 
+I've created an example express API.  Inside the index.js you'll find a few examples of how to set up API endpoints as well as a few examples of what you can do with them.  This is a _very_ basic example.  Many things are missing to create a proper API such as 
+* Proper user authentication - we don't want John Smith making an API call to Jane Smiths credit card
+* Other HTML methods - in my example, I only use GET requests, but many others exist.  We will most likely only ever use GET or POST
 
-## Available Scripts
+For more examples of what Express can do see [here](https://expressjs.com/en/4x/api.html)
 
-In the project directory, you can run:
+# Running the Server
+Now to run this server is very simple.  You'll need to install NPM which is the Node Package Manager.
 
-### `npm start`
+Installing Node
+--------------- 
+* Debian Based Linux
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+   ```
+   sudo apt update
+   sudo apt install nodejs npm
+   ```
+* OS X w/ Homebrew (I strongly recommend Homebrew if you don't have it, but it's not necessary _at all_ for the project.  It's just nice to have a package manager)
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+    ```
+    brew install node
+    ```
+* OS X w/out Homebrew  - [Node has also provided a nice installer for you](https://nodejs.org/en/download/)
+* Windows - [Node has also provided a nice installer for you](https://nodejs.org/en/download/)
+* Other Linux - You can compile the source for yourself if you'd like, or find Node in whatever package manager your distro comes with.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# API Design
+Now when I said to design you API, what I mean is to come up with the skeleton of all the endpoint you'll provide with the following information:
+* Do they require authentication?  If no that means _anybody_ can get that endpoints information
+* Should they be GET or POST requests?  A quick overview of this is GET endpoints get information (e.g. give me info about book with ISBN X) and POST endpoints send information to the server (e.g. add this book information to your database).
+* What parameters will it have?  Will the be required parameters or optional?
+* What _other_ API endpoints do you need?  For example, if a user is signed in and wants to add to checkout, you need to check with the profile management API if they have a valid payment method on file.
 
-### `npm run build`
+Information like that is what you should provide for your API design.  Getting this out of the way now will prevent, "Oopsie, I needed this feature" 4 weeks from now.  We'll still probably run into some, but the goal is to minimize that. 
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+# This README
+This README isn't just a word document.  It's typed in what's called Markdown (common on a lot of forums such as Reddit's commenting).  For an overview of how to write in Markdown, see the [cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#lists)
